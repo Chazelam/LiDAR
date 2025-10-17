@@ -1,4 +1,6 @@
 data/
+LAS_split output/
+*.las
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
