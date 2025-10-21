@@ -12,10 +12,7 @@ def split_las_streamed(input_las_file,
                        las_read_chunk_size = 5_000_000):
     """
     Stream splits a file without loading it into memory
-    TODO:
-     - Добавить зазоры
-     - Добавить многопоточность
-     - Прибраться в комментариях
+
     """
 
     # По необходимости создаем директорию
@@ -114,10 +111,68 @@ def split_las_streamed(input_las_file,
     print("Разбиение завершено.")
 
 
+def merge_tiles(input_dir, 
+                output_las_file, 
+                tile_overlap, 
+                las_read_chunk_size = 5_000_000):
+    """
+    Merges all tiles in the input directory into a single LAS file.
+    """
+    # список фалов las в директории
+    tile_files = [os.path.join(input_dir, f) for f in os.listdir(input_dir) if f.endswith('.las')]
+    
+    if not tile_files:
+        print("No tile files found in the specified directory.")
+        return
+
+    for tile_file in tqdm(tile_files, total=len(tile_files)):
+
+        with laspy.open(tile_file) as f:
+            header = f.header
+            total_points = header.point_count
+            min_x, max_x = header.mins[0]+tile_overlap, header.maxs[0]-tile_overlap
+            min_y, max_y = header.mins[1]+tile_overlap, header.maxs[1]-tile_overlap
+
+            if not os.path.isfile(output_las_file):
+                laspy.LasData(header).write(output_las_file)
+
+            total_chunks = total_points // las_read_chunk_size 
+            total_chunks += (1 if total_points % las_read_chunk_size else 0)
+
+            # for points in tqdm(f.chunk_iterator(las_read_chunk_size), 
+            #                total=total_chunks, 
+            #                desc="  Слияние файлов"):
+
+            for points in f.chunk_iterator(las_read_chunk_size):
+
+
+                # # Загружаем точки из чанка
+                # x, y = points.x, points.y
+
+                # Отбрачаваем точки из запаса
+                # mask = (x > min_x) & (x < max_x) & (y > min_y) & (y < max_y)
+                # # x = x[x > min_x]
+                # # x = x[x < max_x]
+                # # y = y[y > min_y]
+                # # y = y[y < max_y]
+
+                # # Фильтруем точки
+                pts_chunk = points#[mask]
+
+                # Копируем в новый las объект всю онформацию о выбраных точках
+                new_las = laspy.LasData(header)
+                new_las.points = pts_chunk
+
+                # Дополняем соответствующий файл новыми точками
+                with open(output_las_file, "rb+") as dest:
+                    with LasAppender(dest) as appender:
+                        appender.append_points(new_las.points)
+
+
 if __name__ == "__main__":
-    input_las_file = "data/pine_forest.las"
-    output_dir = "LAS_split output"
-    tile_size = 40
+    input_las_file = "data/pine_input_40x40.las"
+    output_dir = "output"
+    tile_size = 5
     tile_overlap = 0
     las_read_chunk_size = 5_000_000
 
@@ -126,3 +181,8 @@ if __name__ == "__main__":
                        las_read_chunk_size = las_read_chunk_size,
                        tile_size  = tile_size,
                        tile_overlap= tile_overlap)
+
+    # merge_tiles(input_dir=output_dir,
+    #             output_las_file="out2.las",
+    #             tile_overlap=tile_overlap,
+    #             las_read_chunk_size=las_read_chunk_size)

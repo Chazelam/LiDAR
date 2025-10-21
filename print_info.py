@@ -40,6 +40,7 @@ def print_las_info(las_path):
             break
 
 if __name__ == "__main__":
-    las_file = "data/pine_forest.las"
+    # las_file = "data/pine_forest.las"
+    las_file = "output/tile_2_2.las"
 
     print_las_info(las_file)
