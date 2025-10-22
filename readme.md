@@ -35,14 +35,26 @@
   
 
 # Density filter
-Работает, но нужно переписать без итерации (не все соседи поподают в чанк) и сократить вычисления.
-Найтии оптимальный порог плотности, поиграться с параметрами.
+Поиск количества соседей в радиусе 1 метра:
+```python
+counts_large = tree.query_ball_point(points, r=1, workers=-1, return_length=True)
+```
+18М точек на ryzen 5500 с 100% загрузгой на 12 ядер по 4.3Ghz занял 90 минут.
+А это чанк 5х5 метров.
+И на сервере будет проц в разы слабее -_- 
 
+Быстрая гуглежка более оптимальных методов не дала.
+Есть конечно вариант подключить GPU с CUDA, но сомнительно.
+
+Листва в центральных облостях гораздо плотнее чем ожидал.
+Сохранил количество соседей для 1, 0.1, 0.01 и 0.001 метра в файлы npy, чтобы не пересчитывать.
+Провести анализ плотностей и найти комбиначию и порог для отделения листвы.
 
 ---
 
 # Ссылки
 [LAS format Specification](https://www.asprs.org/a/society/committees/standards/asprs_las_format_v12.pdf)
+>Бтв устарел, уже есть [16 версия](https://github.com/user-attachments/files/19652477/LAS_1.4R16_draft_for_public_comment_v2.pdf), нужно проверить отличия 
 
 [laspy documentation](https://laspy.readthedocs.io/en/latest/intro.html#header)
 [laspy.lasappender — laspy 2.5.0 documentation](https://laspy.readthedocs.io/en/latest/_modules/laspy/lasappender.html#LasAppender)
