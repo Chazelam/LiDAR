@@ -1,6 +1,6 @@
 import laspy 
 import numpy as np
-import os
+import os, sys
 
 def print_las_info(las_path):
     """
@@ -28,7 +28,7 @@ def print_las_info(las_path):
         print(f"  X: {min_x:.2f} - {max_x:.2f}  (ширина {width:.2f} м)")
         print(f"  Y: {min_y:.2f} - {max_y:.2f}  (размах {lenght:.2f} м)")
         print(f"  Z: {min_z:.2f} - {max_z:.2f}  (высота {max_z - min_z:.2f} м)")
-        print(f"Площадь покрытия: {area/1e6:.2f} км²")
+        print(f"Площадь покрытия: {area:.2f} м²")
 
         print(f"Средняя плотность: {density:.2f} точек/м²\n")
 
@@ -41,6 +41,7 @@ def print_las_info(las_path):
 
 if __name__ == "__main__":
     # las_file = "data/pine_forest.las"
-    las_file = "output/tile_2_2.las"
+    input_las_file = sys.argv[1]
 
-    print_las_info(las_file)
+
+    print_las_info(input_las_file)

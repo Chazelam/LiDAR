@@ -3,6 +3,7 @@ import numpy as np
 from tqdm import tqdm
 from laspy.lasappender import LasAppender
 import os
+import sys
 
 
 def split_las_streamed(input_las_file,
@@ -12,7 +13,6 @@ def split_las_streamed(input_las_file,
                        las_read_chunk_size = 5_000_000):
     """
     Stream splits a file without loading it into memory
-
     """
 
     # По необходимости создаем директорию
@@ -59,16 +59,6 @@ def split_las_streamed(input_las_file,
             ix = np.floor((x - min_x) / tile_size).astype(int)
             iy = np.floor((y - min_y) / tile_size).astype(int)
 
-            # # Собираем пары индексов
-            # tile_indices = np.vstack((ix, iy)).T
-
-            # # Уникальные отсортированые тайлы и индексы точек в них
-            # unique_tiles, inverse = np.unique(tile_indices, axis=0, return_inverse=True)
-
-            # # Раскидываем точки по файлам
-            # for t_idx, tile_key in enumerate(unique_tiles):
-            #     # Для кажой уникальной пары индексов(сектора) делаем маску на все точки из нее
-            #     mask = inverse == t_idx
                 
             base_indices = np.vstack((ix, iy)).T
             unique_tiles = np.unique(base_indices, axis=0)
@@ -170,11 +160,13 @@ def merge_tiles(input_dir,
 
 
 if __name__ == "__main__":
-    input_las_file = "data/pine_input_40x40.las"
-    output_dir = "output"
-    tile_size = 5
-    tile_overlap = 0
+    # input_las_file = "data/pine_input_40x40.las"
+    output_dir = "LAS_split_output"
     las_read_chunk_size = 5_000_000
+
+    input_las_file = sys.argv[1]
+    tile_size      = int(sys.argv[2])
+    tile_overlap   = int(sys.argv[3])
 
     split_las_streamed(input_las_file = input_las_file,
                        output_dir     = output_dir, 
